@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
+import torchsat.models.classification as satmod
 
 
 class ResNetSimCLR(nn.Module):
@@ -9,6 +10,9 @@ class ResNetSimCLR(nn.Module):
         super(ResNetSimCLR, self).__init__()
         self.resnet_dict = {"resnet18": models.resnet18(pretrained=False),
                             "resnet50": models.resnet50(pretrained=False)}
+
+        self.resnet_dict = {'resnet18': satmod.resnet.resnet18(num_classes=out_dim, in_channels=12),
+                            'resnet50': satmod.resnet.resnet18(num_classes=out_dim, in_channels=12)}
 
         resnet = self._get_basemodel(base_model)
         num_ftrs = resnet.fc.in_features

@@ -66,7 +66,9 @@ class SimCLR(object):
 
         optimizer = torch.optim.Adam(model.parameters(), 3e-4, weight_decay=eval(self.config['weight_decay']))
 
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                               T_max=len(train_loader),
+                                                               eta_min=0,
                                                                last_epoch=-1)
 
         if apex_support and self.config['fp16_precision']:
@@ -84,11 +86,11 @@ class SimCLR(object):
         best_valid_loss = np.inf
 
         for epoch_counter in range(self.config['epochs']):
-            for (xis, xjs), _ in train_loader:
+            for i, (xis, xjs) in enumerate(train_loader):
                 optimizer.zero_grad()
 
-                xis = xis.to(self.device)
-                xjs = xjs.to(self.device)
+                xis = xis.to(self.device, dtype=torch.float)
+                xjs = xjs.to(self.device, dtype=torch.float)
 
                 loss = self._step(model, xis, xjs, n_iter)
 
@@ -100,7 +102,8 @@ class SimCLR(object):
                         scaled_loss.backward()
                 else:
                     loss.backward()
-
+                if i % 10 == 0:
+                    print("epoch:", epoch_counter, "i:", i, "loss:", loss.item())
                 optimizer.step()
                 n_iter += 1
 
